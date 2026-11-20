@@ -1,0 +1,21 @@
+{
+  "brand": "MultiLive",
+  "pill": "Multi-live no seu celular",
+  "apps": {
+    "twitchview": {
+      "status": "live",
+      "link": "",
+      "version": ""
+    },
+    "kiview": {
+      "status": "live",
+      "link": "",
+      "version": ""
+    },
+    "youtube": {
+      "status": "soon",
+      "link": "",
+      "version": ""
+    }
+  }
+}

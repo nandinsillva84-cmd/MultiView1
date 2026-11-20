@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07050f">
+<title>Multi-Live Apps · TwitchView, KiView e mais</title>
+<meta name="description" content="Apps para assistir várias lives ao mesmo tempo: TwitchView, KiView e o app de YouTube em breve.">
+<script>document.documentElement.className="js"</script>
+<style>
+:root{--bg:#07050f;--txt:#f3f0ff;--mute:#a59ec3;--line:rgba(255,255,255,.1);--glass:rgba(255,255,255,.05);--ease:cubic-bezier(.2,.8,.2,1);color-scheme:dark}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{background:var(--bg);color:var(--txt);font:17px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+[hidden]{display:none!important}
+.btn small{opacity:.7;font-weight:600}
+svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:2px solid #35d0ff;outline-offset:3px}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.bg i{position:absolute;border-radius:50%;filter:blur(110px);opacity:.38;will-change:transform}
+.bg i:nth-child(1){width:60vmax;height:60vmax;background:#6a3dff;top:-25vmax;left:-20vmax}
+.bg i:nth-child(2){width:50vmax;height:50vmax;background:#19e06b;bottom:-25vmax;right:-15vmax;opacity:.22}
+.bg i:nth-child(3){width:35vmax;height:35vmax;background:#ff3b5c;top:40%;left:55%;opacity:.16}
+.bg::after{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse at 50% 30%,#000,transparent 70%);opacity:.35}
+#bar{position:fixed;top:0;left:0;right:0;height:3px;z-index:60;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#9b6bff,#ff4fa3,#53fc18)}
+.curtain{position:fixed;inset:0;z-index:100;background:#07050f;display:grid;place-items:center;pointer-events:none;animation:wipe 1s .9s var(--ease) forwards}
+.curtain b{font-size:clamp(28px,6vw,52px);letter-spacing:-.03em;background:linear-gradient(90deg,#9b6bff,#ff4fa3,#53fc18);-webkit-background-clip:text;background-clip:text;color:transparent;animation:pulse 1s ease-in-out infinite alternate}
+@keyframes wipe{to{transform:translateY(-100%)}}
+@keyframes pulse{to{opacity:.4;transform:scale(.96)}}
+nav{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;display:flex;align-items:center;gap:6px;padding:8px 8px 8px 18px;border-radius:999px;background:rgba(20,14,40,.6);border:1px solid var(--line);backdrop-filter:blur(18px);width:min(94vw,820px)}
+nav .brand{font-weight:800;letter-spacing:-.02em;margin-right:auto}
+nav .brand span{background:linear-gradient(90deg,#9b6bff,#53fc18);-webkit-background-clip:text;background-clip:text;color:transparent}
+nav a.l{padding:8px 14px;border-radius:999px;color:var(--mute);font-size:15px;transition:.25s}
+nav a.l:hover{color:#fff;background:var(--glass)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;font-weight:700;color:#0b0814;background:linear-gradient(135deg,var(--a1,#fff),var(--a2,#cfc8ff));position:relative;overflow:hidden;transition:transform .3s var(--ease),box-shadow .3s;box-shadow:0 10px 30px -8px var(--a1,#9b6bff)}
+.btn::after{content:"";position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(100deg,transparent,#fff9,transparent);transform:skewX(-20deg);transition:left .7s var(--ease)}
+.btn:hover{transform:translateY(-3px) scale(1.03)}.btn:hover::after{left:140%}
+.btn.off{background:var(--glass);color:var(--mute);box-shadow:none;border:1px dashed var(--line);cursor:default}
+.btn.off:hover{transform:none}.btn.off::after{display:none}
+.btn.ghost{background:var(--glass);color:var(--txt);border:1px solid var(--line);box-shadow:none}
+main{max-width:1160px;margin:0 auto;padding:0 20px}
+.hero{min-height:100svh;display:grid;grid-template-columns:1.05fr .95fr;gap:30px;align-items:center;padding-top:110px}
+.pill{display:inline-flex;gap:8px;align-items:center;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--glass);font-size:14px;color:var(--mute);margin-bottom:22px}
+.pill i{width:8px;height:8px;border-radius:50%;background:#ff3b5c;box-shadow:0 0 10px #ff3b5c;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.3}}
+h1{font-size:clamp(44px,7.4vw,92px);line-height:1;letter-spacing:-.045em;font-weight:900}
+.wd{display:inline-block;overflow:hidden;vertical-align:bottom;padding-bottom:.08em}
+.w{display:inline-block;transform:translateY(110%);animation:up .9s var(--ease) forwards;animation-delay:calc(var(--i)*80ms + 1.6s)}
+@keyframes up{to{transform:none}}
+.grad{background:linear-gradient(90deg,#9b6bff,#ff4fa3 45%,#53fc18);-webkit-background-clip:text;background-clip:text;color:transparent;background-size:200% 100%;animation:slide 6s linear infinite}
+@keyframes slide{to{background-position:-200% 0}}
+.sub{font-size:clamp(17px,2vw,21px);color:var(--mute);max-width:520px;margin:24px 0 32px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.stage{position:relative;height:560px;display:grid;place-items:center;perspective:1200px}
+.tilt{transition:transform .25s ease-out;transform-style:preserve-3d;will-change:transform}
+.phone{width:230px;aspect-ratio:9/18.5;border-radius:34px;background:#06040d;border:1px solid rgba(255,255,255,.2);padding:11px;box-shadow:0 40px 80px -10px #000c,0 0 90px -10px var(--a1);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-16px)}}
+.scr{height:100%;border-radius:24px;background:#0d0818;padding:8px;display:flex;flex-direction:column;gap:6px;overflow:hidden}
+.top{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:2px 4px}
+.top b{width:14px;height:14px;border-radius:5px;background:linear-gradient(135deg,var(--a1),var(--a2))}
+.grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tl{position:relative;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,var(--a1),var(--a2))}
+.tl:nth-child(2){filter:hue-rotate(40deg) brightness(.8)}.tl:nth-child(3){filter:hue-rotate(-30deg) brightness(.65)}.tl:nth-child(4){filter:brightness(.5)}
+.tl::before{content:"";position:absolute;inset:0;margin:auto;width:20px;height:20px;background:#fff;opacity:.9;clip-path:polygon(25% 12%,92% 50%,25% 88%)}
+.tl::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,#fff4 50%,transparent 70%);transform:translateX(-100%);animation:sh 3.2s infinite}
+.tl:nth-child(2)::after{animation-delay:.6s}.tl:nth-child(3)::after{animation-delay:1.2s}.tl:nth-child(4)::after{animation-delay:1.8s}
+@keyframes sh{60%,100%{transform:translateX(100%)}}
+.hero .stage .tilt{position:absolute}
+.hero .tilt:nth-child(1){transform:translate(-62%,6%) rotate(-9deg) scale(.82);z-index:1}
+.hero .tilt:nth-child(3){transform:translate(62%,6%) rotate(9deg) scale(.82);z-index:1}
+.hero .tilt:nth-child(2){z-index:2}
+.hero .tilt:nth-child(1) .phone{animation-delay:-2s}.hero .tilt:nth-child(3) .phone{animation-delay:-4s}
+.t{--a1:#9b6bff;--a2:#ff4fa3}.k{--a1:#53fc18;--a2:#0fb88a}.y{--a1:#ff3b3b;--a2:#ff9a3d}
+.strip{overflow:hidden;border-block:1px solid var(--line);margin:0 -20px;padding:18px 0;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.strip div{display:flex;gap:46px;width:max-content;animation:mq 28s linear infinite;color:var(--mute);font-size:20px;font-weight:600;white-space:nowrap}
+.strip span::before{content:"✦";margin-right:46px;color:#9b6bff}
+@keyframes mq{to{transform:translateX(-50%)}}
+section{padding:110px 0 0}
+h2{font-size:clamp(34px,5vw,60px);line-height:1.05;letter-spacing:-.04em;font-weight:900;max-width:760px}
+.lead{color:var(--mute);max-width:600px;margin:16px 0 0}
+.stack{margin-top:50px}
+.app{position:sticky;top:calc(84px + var(--n)*16px);margin-bottom:26px;display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center;padding:clamp(24px,4vw,52px);border-radius:32px;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid var(--line);backdrop-filter:blur(22px);overflow:hidden;transform-origin:50% 0;min-height:440px;will-change:transform}
+.app::before{content:"";position:absolute;inset:0;background:radial-gradient(500px circle at var(--mx,80%) var(--my,0%),color-mix(in srgb,var(--a1) 28%,transparent),transparent 60%);transition:opacity .3s;pointer-events:none}
+.app>*{position:relative}
+.logo{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,var(--a1),var(--a2));box-shadow:0 12px 36px -6px var(--a1);overflow:hidden;font-size:26px;color:#0b0814}
+.logo img{width:100%;height:100%;object-fit:cover}
+.app h3{font-size:clamp(34px,5vw,56px);letter-spacing:-.04em;line-height:1;margin:18px 0 8px;font-weight:900;background:linear-gradient(90deg,var(--a1),var(--a2));-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.app p{color:var(--mute);max-width:480px}
+.app ul{list-style:none;padding:0;margin:20px 0 26px;display:grid;gap:10px}
+.app li{display:flex;gap:12px;align-items:flex-start}
+.app li svg{flex:none;margin-top:5px;width:18px;height:18px;padding:3px;border-radius:50%;background:color-mix(in srgb,var(--a1) 25%,transparent);color:var(--a1);stroke-width:3}
+.vis{display:grid;place-items:center;perspective:1000px}
+.soon{display:inline-block;margin-left:10px;font-size:12px;font-weight:800;padding:3px 10px;border-radius:99px;background:var(--a1);color:#0b0814;vertical-align:middle;-webkit-text-fill-color:#0b0814}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
+.card{position:relative;padding:28px 22px;border-radius:24px;background:var(--glass);border:1px solid var(--line);overflow:hidden;transition:transform .4s var(--ease),border-color .3s}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(260px circle at var(--mx,50%) var(--my,0%),#ffffff18,transparent 60%);opacity:0;transition:opacity .3s}
+.card:hover{transform:translateY(-6px);border-color:#ffffff40}.card:hover::before{opacity:1}
+.num{font-size:clamp(40px,5vw,60px);font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,#fff,#9b6bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card small{display:block;color:var(--mute);margin-top:8px;font-size:15px;line-height:1.35}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;counter-reset:s}
+.step{counter-increment:s}
+.step::after{content:counter(s);position:absolute;right:18px;top:6px;font-size:90px;font-weight:900;color:#ffffff0d}
+.step h4{font-size:21px;margin-bottom:6px}.step p{color:var(--mute);font-size:15px}
+details{border:1px solid var(--line);background:var(--glass);border-radius:20px;margin-top:12px;overflow:hidden;transition:border-color .3s}
+details[open]{border-color:#9b6bff88}
+summary{list-style:none;cursor:pointer;padding:20px 24px;font-weight:700;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary svg{flex:none;transition:transform .4s var(--ease);margin-top:5px}
+details[open] summary svg{transform:rotate(45deg)}
+details p{padding:0 24px 22px;color:var(--mute)}
+.final{margin:110px 0 40px;text-align:center;padding:70px 24px;border-radius:36px;border:1px solid var(--line);background:radial-gradient(600px circle at 50% 0%,#9b6bff33,transparent 70%),var(--glass);position:relative;overflow:hidden}
+.final h2{margin:0 auto}.final .cta{justify-content:center;margin-top:30px}
+footer{text-align:center;color:var(--mute);font-size:14px;padding:30px 0 50px}
+.js .rv{opacity:0;transform:translateY(46px) scale(.97);filter:blur(10px);transition:opacity 1s var(--ease),transform 1s var(--ease),filter 1s var(--ease);transition-delay:var(--d,0s)}
+.js .rv.in{opacity:1;transform:none;filter:none}
+@media(max-width:860px){
+ .hero{grid-template-columns:1fr;padding-top:110px;text-align:left}
+ .stage{height:440px}.phone{width:190px}
+ .app{position:relative;top:auto;grid-template-columns:1fr;min-height:0}
+ .stats{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr}
+ nav a.l{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.w{transform:none}.js .rv{opacity:1;transform:none;filter:none}.curtain{display:none}}
+
+/* ===== upgrade visual ===== */
+@property --ang{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes spin{to{--ang:360deg}}
+@keyframes rot{to{transform:rotate(360deg)}}
+body::after{content:"";position:fixed;inset:-50%;z-index:70;pointer-events:none;opacity:.06;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+#glow{position:fixed;left:0;top:0;width:560px;height:560px;margin:-280px 0 0 -280px;border-radius:50%;pointer-events:none;z-index:-1;background:radial-gradient(circle,rgba(155,107,255,.2),transparent 65%);will-change:transform}
+.app::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;background:conic-gradient(from var(--ang),transparent 0 60%,var(--a1) 80%,var(--a2) 92%,transparent);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 7s linear infinite}
+.stage::before{content:"";position:absolute;inset:0;margin:auto;width:min(540px,96%);aspect-ratio:1;border-radius:50%;border:1px dashed rgba(255,255,255,.16);animation:rot 50s linear infinite}
+.stage::after{content:"";position:absolute;inset:0;margin:auto;width:min(360px,70%);aspect-ratio:1;border-radius:50%;background:conic-gradient(#9b6bff66,#ff4fa366,#53fc1866,#9b6bff66);filter:blur(64px);animation:rot 20s linear infinite}
+.grad{filter:drop-shadow(0 0 26px #9b6bff66)}
+nav{transition:background .4s,box-shadow .4s}
+nav.s{background:rgba(12,8,24,.88);box-shadow:0 16px 44px #000b}
+nav a.l.act{color:#fff;background:var(--glass)}
+.lv{position:absolute;top:5px;left:5px;z-index:2;font-size:7px;font-weight:800;letter-spacing:.05em;padding:1px 5px;border-radius:5px;background:#ff3b5c;color:#fff}
+.nm{position:absolute;bottom:5px;left:6px;z-index:2;font-size:8px;font-weight:700;color:#fff;text-shadow:0 1px 4px #000}
+.dk{display:flex;gap:3px;justify-content:center;padding:4px;border-radius:99px;background:#ffffff14;font-size:8px}
+.dk b,.dk u{text-decoration:none;font-weight:800;padding:3px 8px;border-radius:99px;color:var(--mute)}
+.dk .on{background:linear-gradient(135deg,var(--a1),var(--a2));color:#0b0814}
+.js .rv.in.card.done{transition:transform .2s ease-out,border-color .3s}
+@media(hover:none){#glow{display:none}}
+
+.grad{background:none;animation:none;color:inherit}
+.grad .w{background:linear-gradient(90deg,#9b6bff,#ff4fa3 50%,#53fc18);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:up .9s var(--ease) calc(var(--i)*80ms + 1.6s) forwards,slide 6s linear infinite}
+.scr .grid{flex:none;align-content:start}
+.scr .tl{aspect-ratio:16/10}
+.ct{flex:1;min-height:0;border-radius:10px;background:#ffffff09;padding:7px;display:flex;flex-direction:column;gap:7px;overflow:hidden}
+.ct p{display:flex;align-items:center;gap:5px}
+.ct i{flex:none;width:7px;height:7px;border-radius:50%;background:hsl(var(--h),85%,66%)}
+.ct em{height:5px;border-radius:3px;background:#ffffff26;width:var(--w)}
+.vis .phone{width:210px}
+</style>
+</head>
+<body>
+<div class="curtain"><b id="cb">MultiLive</b></div>
+<div id="bar"></div>
+<div class="bg"><i></i><i></i><i></i></div>
+
+<nav>
+  <a class="brand" href="#top"><span id="brand">MultiLive</span></a>
+  <a class="l" href="#apps">Apps</a><a class="l" href="#como">Como funciona</a><a class="l" href="#faq">Dúvidas</a>
+  <a class="btn" href="#apps" style="--a1:#9b6bff;--a2:#ff4fa3;padding:10px 18px">Baixar</a>
+</nav>
+
+<main id="top">
+<header class="hero">
+  <div>
+    <div class="pill"><i></i><span id="pilltxt">Multi-live no seu celular</span></div>
+    <h1 id="h1">Todas as suas lives. <span class="grad">Uma tela só.</span></h1>
+    <p class="sub">Apps feitos para assistir vários streamers ao mesmo tempo, com qualidade máxima, chat e monitor de rede. Escolha a plataforma e baixe.</p>
+    <div class="cta"><a class="btn" href="#apps" style="--a1:#fff;--a2:#cfc8ff">Ver os apps</a><a class="btn ghost" href="#como">Como funciona</a></div>
+  </div>
+  <div class="stage" aria-hidden="true">
+    <div class="tilt t"><div class="phone"><div class="scr"><div class="top"><b></b>TwitchView</div><div class="grid"><div class="tl"></div><div class="tl"></div><div class="tl"></div><div class="tl"></div></div></div></div></div>
+    <div class="tilt k"><div class="phone"><div class="scr"><div class="top"><b></b>KiView</div><div class="grid"><div class="tl"></div><div class="tl"></div><div class="tl"></div><div class="tl"></div></div></div></div></div>
+    <div class="tilt y"><div class="phone"><div class="scr"><div class="top"><b></b>YouTube</div><div class="grid"><div class="tl"></div><div class="tl"></div><div class="tl"></div><div class="tl"></div></div></div></div></div>
+  </div>
+</header>
+
+<div class="strip" aria-hidden="true"><div>
+<span>Até 10 lives juntas</span><span>Qualidade máxima</span><span>Monitor de rede</span><span>DNS anti-anúncios</span><span>Chat integrado</span><span>Janela flutuante</span>
+<span>Até 10 lives juntas</span><span>Qualidade máxima</span><span>Monitor de rede</span><span>DNS anti-anúncios</span><span>Chat integrado</span><span>Janela flutuante</span>
+</div></div>
+
+<section id="apps">
+  <h2 class="rv">Um app para cada plataforma.</h2>
+  <p class="lead rv">Mesma ideia, feita sob medida para cada site de live. Role e conheça.</p>
+  <div class="stack">
+
+    <article class="app t" data-card="twitchview" style="--n:0">
+      <div>
+        <div class="logo"><svg viewBox="0 0 24 24" style="fill:#0b0814;stroke:none"><path d="M8 5v14l11-7z"/></svg></div>
+        <h3>TwitchView</h3>
+        <p>Reúna todas as lives da Twitch que você acompanha e assista até 10 ao mesmo tempo.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Até 10 lives simultâneas, só a primeira com som</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Botão MAX: qualidade de origem em todas as lives</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Monitor de rede com ping e velocidade em tempo real</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Atalho de bloqueio com DNS anti-anúncios e chat integrado</li>
+        </ul>
+        <a class="btn" data-app="twitchview" href="#" style="--a1:#9b6bff;--a2:#ff4fa3"><svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg>Baixar para Android</a>
+      </div>
+      <div class="vis"><div class="tilt"><div class="phone"><div class="scr"><div class="top"><b></b>TwitchView</div><div class="grid"><div class="tl"></div><div class="tl"></div><div class="tl"></div><div class="tl"></div></div></div></div></div></div>
+    </article>
+
+    <article class="app k" data-card="kiview" style="--n:1">
+      <div>
+        <div class="logo"><img alt="Logo do KiView" src="data:image/jpeg;base64,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"></div>
+        <h3>KiView</h3>
+        <p>O multi-live da Kick com controle total: organize, favorite e personalize do seu jeito.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Várias lives da Kick ao mesmo tempo</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Arraste para reordenar as telas</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Favoritos e telas salvas para voltar em um toque</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Janela flutuante, tela cheia e chat por live</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Logo e fundo personalizados pela galeria</li>
+        </ul>
+        <a class="btn" data-app="kiview" href="#" style="--a1:#53fc18;--a2:#0fb88a"><svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg>Baixar para Android</a>
+      </div>
+      <div class="vis"><div class="tilt"><div class="phone"><div class="scr"><div class="top"><b></b>KiView</div><div class="grid"><div class="tl"></div><div class="tl"></div><div class="tl"></div><div class="tl"></div></div></div></div></div></div>
+    </article>
+
+    <article class="app y" data-card="youtube" style="--n:2">
+      <div>
+        <div class="logo"><svg viewBox="0 0 24 24" style="fill:#0b0814;stroke:none"><path d="M8 5v14l11-7z"/></svg></div>
+        <h3>YouTube<span class="soon">Em breve</span></h3>
+        <p>O próximo da família: um multi-live para as transmissões do YouTube, com o mesmo visual e a mesma facilidade.</p>
+        <ul>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Várias lives do YouTube numa tela</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Mesmo estilo dos outros apps</li>
+          <li><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Em desenvolvimento agora</li>
+        </ul>
+        <a class="btn off" data-app="youtube" href="#">Download em breve</a>
+      </div>
+      <div class="vis"><div class="tilt"><div class="phone"><div class="scr"><div class="top"><b></b>YouTube</div><div class="grid"><div class="tl"></div><div class="tl"></div><div class="tl"></div><div class="tl"></div></div></div></div></div></div>
+    </article>
+
+  </div>
+</section>
+
+<section>
+  <h2 class="rv">Feito para quem vive de live.</h2>
+  <div class="stats">
+    <div class="card rv"><div class="num" data-n="10">0</div><small>lives ao mesmo tempo</small></div>
+    <div class="card rv" style="--d:.1s"><div class="num" data-n="3">0</div><small>plataformas, uma só ideia</small></div>
+    <div class="card rv" style="--d:.2s"><div class="num" data-n="20">0</div><small>servidores DNS de bloqueio de referência</small></div>
+    <div class="card rv" style="--d:.3s"><div class="num" data-n="1">0</div><small>toque para qualidade máxima</small></div>
+  </div>
+</section>
+
+<section id="como">
+  <h2 class="rv">Pronto em três passos.</h2>
+  <div class="steps">
+    <div class="card step rv"><h4>Baixe o app</h4><p>Escolha a plataforma acima e baixe o APK para Android.</p></div>
+    <div class="card step rv" style="--d:.12s"><h4>Adicione seus canais</h4><p>Digite o nome ou cole o link do streamer e toque para assistir.</p></div>
+    <div class="card step rv" style="--d:.24s"><h4>Ative o MAX</h4><p>Escolha quantas lives quer ver e deixe na qualidade mais alta.</p></div>
+  </div>
+</section>
+
+<section id="faq">
+  <h2 class="rv">Dúvidas rápidas.</h2>
+  <div class="rv" style="margin-top:30px">
+    <details><summary>Os apps bloqueiam todos os anúncios?<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p>O DNS anti-anúncios reduz rastreadores e anúncios do celular. Mas os anúncios que a plataforma coloca dentro do próprio vídeo não são removidos por DNS. Para esses, o caminho é assinatura do canal ou o plano sem anúncios da plataforma.</p></details>
+    <details><summary>Como instalo o APK?<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p>Baixe o arquivo, abra e, se o Android pedir, permita a instalação de apps desta fonte. Depois é só abrir o app.</p></details>
+    <details><summary>Vai ter para iPhone?<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p>Por enquanto os apps são para Android.</p></details>
+    <details><summary>Quando sai o app do YouTube?<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></summary><p>Está em desenvolvimento. Assim que estiver pronto, o botão de download aparece aqui.</p></details>
+  </div>
+</section>
+
+<div class="final rv">
+  <h2>Escolha seu app e comece agora.</h2>
+  <div class="cta">
+    <a class="btn" data-app="twitchview" data-cta href="#" style="--a1:#9b6bff;--a2:#ff4fa3">TwitchView</a>
+    <a class="btn" data-app="kiview" data-cta href="#" style="--a1:#53fc18;--a2:#0fb88a">KiView</a>
+  </div>
+</div>
+</main>
+<footer>© <span id="yr"></span> <span id="fb">MultiLive</span> · Feito para assistir mais, com menos distração.</footer>
+
+<script>
+/* Conteudo vem de config.json (editado pelo admin.html) */
+const DEF={brand:"MultiLive",pill:"Multi-live no seu celular",apps:{twitchview:{status:"live",link:"",version:""},kiview:{status:"live",link:"",version:""},youtube:{status:"soon",link:"",version:""}}};
+const ICON='<svg viewBox="0 0 24 24"><path d="M12 4v12m0 0l-5-5m5 5l5-5M5 20h14"/></svg>';
+const COL={twitchview:["#9b6bff","#ff4fa3"],kiview:["#53fc18","#0fb88a"],youtube:["#ff3b3b","#ff9a3d"]};
+function applyCfg(c){
+  const set=(id,t)=>{const e=document.getElementById(id);if(e&&t)e.textContent=t};
+  set("brand",c.brand);set("cb",c.brand);set("fb",c.brand);set("pilltxt",c.pill);
+  if(c.brand)document.title=c.brand+" · TwitchView, KiView e mais";
+  Object.entries(c.apps||{}).forEach(([id,a])=>{
+    const live=a.status==="live"&&/^https?:\/\//i.test(a.link||"");
+    const badge=document.querySelector('[data-card="'+id+'"] .soon');if(badge)badge.hidden=live;
+    document.querySelectorAll('[data-app="'+id+'"]').forEach(el=>{
+      if(el.hasAttribute("data-cta")){el.hidden=!live;if(live)el.href=a.link;return}
+      if(live){el.classList.remove("off");el.href=a.link;el.setAttribute("download","");el.innerHTML=ICON;el.append("Baixar para Android");
+        if(a.version){const m=document.createElement("small");m.textContent="v"+a.version;el.append(m)}
+        el.style.setProperty("--a1",COL[id][0]);el.style.setProperty("--a2",COL[id][1])}
+      else{el.classList.add("off");el.removeAttribute("href");el.removeAttribute("download");el.textContent="Download em breve";el.style.removeProperty("--a1");el.style.removeProperty("--a2")}
+    });
+  });
+}
+applyCfg(DEF);
+fetch("config.json?"+Date.now()).then(r=>r.ok?r.json():null).then(c=>c&&applyCfg(c)).catch(()=>{});
+document.getElementById("yr").textContent=new Date().getFullYear();
+
+/* headline por palavras */
+const h=document.getElementById("h1");let i=0;
+const split=n=>{[...n.childNodes].forEach(c=>{
+  if(c.nodeType===3){const f=document.createDocumentFragment();c.textContent.split(/(\s+)/).forEach(t=>{
+    if(!t.trim()){f.append(t);return}
+    const o=document.createElement("span");o.className="wd";const w=document.createElement("span");w.className="w";w.style.setProperty("--i",i++);w.textContent=t;o.append(w);f.append(o)});c.replaceWith(f)}
+  else split(c)})};
+split(h);
+
+/* revelar ao rolar + contadores */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;e.target.classList.add("in");
+  const n=e.target.querySelector("[data-n]");if(n&&!n.done){n.done=1;const t=+n.dataset.n,s=performance.now();
+    (function f(x){const p=Math.min((x-s)/1400,1);n.textContent=Math.round(t*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(s)}
+  io.unobserve(e.target)}),{threshold:.2});
+document.querySelectorAll(".rv").forEach(e=>io.observe(e));
+
+/* brilho que segue o mouse */
+document.querySelectorAll(".app,.card").forEach(e=>e.addEventListener("pointermove",ev=>{
+  const r=e.getBoundingClientRect();e.style.setProperty("--mx",(ev.clientX-r.left)+"px");e.style.setProperty("--my",(ev.clientY-r.top)+"px")}));
+
+/* inclinacao 3D dos celulares */
+document.querySelectorAll(".stage,.vis").forEach(s=>{
+  s.addEventListener("pointermove",ev=>{const r=s.getBoundingClientRect(),x=(ev.clientX-r.left)/r.width-.5,y=(ev.clientY-r.top)/r.height-.5;
+    s.querySelectorAll(".tilt").forEach((t,k)=>{if(s.classList.contains("vis"))t.style.transform="rotateY("+x*24+"deg) rotateX("+(-y*24)+"deg)"})});
+  s.addEventListener("pointerleave",()=>s.querySelectorAll(".vis .tilt").forEach(t=>t.style.transform=""));
+});
+
+/* barra de progresso, parallax e cartoes empilhados */
+const bar=document.getElementById("bar"),orbs=document.querySelectorAll(".bg i"),apps=[...document.querySelectorAll(".app")];
+let tk=0;
+function frame(){tk=0;const y=scrollY,m=document.documentElement.scrollHeight-innerHeight;
+  bar.style.transform="scaleX("+(m>0?y/m:0)+")";
+  orbs.forEach((o,k)=>o.style.transform="translateY("+(y*(.08+k*.05))+"px)");
+  if(innerWidth>860)apps.forEach((a,k)=>{const nx=apps[k+1];let p=0;
+    if(nx){p=Math.min(Math.max(1-(nx.getBoundingClientRect().top-(a.getBoundingClientRect().top+30))/(a.offsetHeight*.9),0),1)}
+    a.style.transform="scale("+(1-p*.06)+")";a.style.filter="brightness("+(1-p*.35)+")"})}
+addEventListener("scroll",()=>{if(!tk)tk=requestAnimationFrame(frame)},{passive:true});
+addEventListener("resize",frame);frame();
+
+/* ===== upgrade visual: js ===== */
+(()=>{
+const rm=matchMedia("(prefers-reduced-motion:reduce)").matches;
+document.querySelectorAll(".scr").forEach(s=>{
+  s.querySelectorAll(".tl").forEach((t,i)=>t.insertAdjacentHTML("beforeend",'<span class="lv">LIVE</span><span class="nm">Live '+(i+1)+'</span>'));
+  s.insertAdjacentHTML("beforeend",'<div class="ct">'+[0,1,2,3,4,5,6,7,8,9,10,11,12,13].map(k=>'<p><i style="--h:'+(k*53+20)%360+'"></i><em style="--w:'+(30+(k*37)%55)+'%"></em></p>').join("")+'</div>');
+  s.insertAdjacentHTML("beforeend",'<div class="dk"><b>1</b><b class="on">4</b><b>10</b><u>MAX</u></div>');
+});
+const g=document.createElement("div");g.id="glow";document.body.append(g);
+let gx=0,gy=0,tx=innerWidth/2,ty=innerHeight/3;
+addEventListener("pointermove",e=>{tx=e.clientX;ty=e.clientY});
+(function lg(){gx+=(tx-gx)*.08;gy+=(ty-gy)*.08;g.style.transform="translate("+gx+"px,"+gy+"px)";requestAnimationFrame(lg)})();
+const nav=document.querySelector("nav");
+addEventListener("scroll",()=>nav.classList.toggle("s",scrollY>40),{passive:true});
+const links=[...document.querySelectorAll("nav a.l")];
+const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)links.forEach(a=>a.classList.toggle("act",a.getAttribute("href")==="#"+e.target.id))}),{rootMargin:"-45% 0px -50% 0px"});
+document.querySelectorAll("section[id]").forEach(s=>so.observe(s));
+document.querySelectorAll(".btn:not(.off)").forEach(b=>{
+  b.addEventListener("pointermove",e=>{if(e.pointerType!=="mouse")return;const r=b.getBoundingClientRect();b.style.transform="translate("+(e.clientX-r.left-r.width/2)*.18+"px,"+(e.clientY-r.top-r.height/2)*.28+"px) scale(1.04)"});
+  b.addEventListener("pointerleave",()=>b.style.transform="")});
+document.querySelectorAll(".card").forEach(c=>{
+  c.addEventListener("pointermove",e=>{if(e.pointerType!=="mouse")return;c.classList.add("done");const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform="perspective(700px) rotateY("+x*10+"deg) rotateX("+(-y*10)+"deg) translateY(-6px)"});
+  c.addEventListener("pointerleave",()=>c.style.transform="")});
+if(rm)return;
+const c=document.createElement("canvas");c.style.cssText="position:fixed;inset:0;z-index:-1;pointer-events:none";document.body.prepend(c);
+const x=c.getContext("2d");let W,H,P=[],mx=-999,my=-999;
+const rs=()=>{W=c.width=innerWidth;H=c.height=innerHeight;P=Array.from({length:Math.min(70,W/18|0)},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.4+.4}))};
+rs();addEventListener("resize",rs);addEventListener("pointermove",e=>{mx=e.clientX;my=e.clientY});
+(function lp(){x.clearRect(0,0,W,H);
+  for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+    const d=Math.hypot(p.x-mx,p.y-my)||1;if(d<140){p.x+=(p.x-mx)/d*.8;p.y+=(p.y-my)/d*.8}
+    x.fillStyle="rgba(200,190,255,.55)";x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fill()}
+  for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const d=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);
+    if(d<110){x.strokeStyle="rgba(155,107,255,"+.18*(1-d/110)+")";x.beginPath();x.moveTo(P[i].x,P[i].y);x.lineTo(P[j].x,P[j].y);x.stroke()}}
+  requestAnimationFrame(lp)})();
+})();
+</script>
+</body>
+</html>
