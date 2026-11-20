@@ -4,13 +4,13 @@
   "apps": {
     "twitchview": {
       "status": "live",
-      "link": "",
-      "version": ""
+      "link": "https://github.com/nandinsillva84-cmd/MultiView1/blob/main/twitchview.html",
+      "version": "1.0"
     },
     "kiview": {
       "status": "live",
-      "link": "",
-      "version": ""
+      "link": "https://github.com/nandinsillva84-cmd/MultiView1/blob/main/kiview.html",
+      "version": "1.0"
     },
     "youtube": {
       "status": "soon",
